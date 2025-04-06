@@ -1,27 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>QR Code Scanner</title>
+  <title>Scan ID</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     body {
-      font-family: sans-serif;
-      text-align: center;
-      margin-top: 40px;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 30px;
+      padding: 40px;
     }
     #reader {
       width: 300px;
-      margin: auto;
+    }
+    #result-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      width: 300px;
+      min-height: 150px;
+      font-size: 18px;
+      background-color: #f9f9f9;
+      border-radius: 10px;
+    }
+    h2 {
+      margin-top: 0;
     }
   </style>
 </head>
 <body>
-  <h2>Scan QR Code</h2>
-  <div id="reader"></div>
+  <div>
+    <h2>Scan QR Code</h2>
+    <div id="reader"></div>
+  </div>
+
+  <div>
+    <h2>Scanned Result</h2>
+    <div id="result-box">Waiting for scan...</div>
+  </div>
+
   <script>
     function onScanSuccess(decodedText, decodedResult) {
-      alert("Scanned: " + decodedText);
+      document.getElementById("result-box").innerText = decodedText;
     }
+
     let html5QrcodeScanner = new Html5QrcodeScanner(
       "reader", { fps: 10, qrbox: 250 });
     html5QrcodeScanner.render(onScanSuccess);
