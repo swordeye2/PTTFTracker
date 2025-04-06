@@ -1,53 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Scan ID</title>
+  <meta charset="UTF-8">
+  <title>QR Code Scanner</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 40px;
       display: flex;
+      flex-direction: row;
       justify-content: center;
       align-items: flex-start;
-      gap: 30px;
-      padding: 40px;
+      gap: 40px;
+      background-color: #f4f4f4;
     }
     #reader {
-      width: 300px;
-    }
-    #result-box {
-      border: 1px solid #ccc;
-      padding: 20px;
-      width: 300px;
-      min-height: 150px;
-      font-size: 18px;
-      background-color: #f9f9f9;
+      width: 320px;
+      border: 2px solid #ddd;
       border-radius: 10px;
+      padding: 10px;
+      background-color: white;
+    }
+    #result-panel {
+      width: 300px;
+      min-height: 160px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      border: 2px solid #ddd;
     }
     h2 {
       margin-top: 0;
     }
+    #scanned-text {
+      font-size: 18px;
+      word-break: break-word;
+      color: #333;
+    }
   </style>
 </head>
 <body>
+
   <div>
-    <h2>Scan QR Code</h2>
+    <h2>QR Scanner</h2>
     <div id="reader"></div>
   </div>
 
-  <div>
+  <div id="result-panel">
     <h2>Scanned Result</h2>
-    <div id="result-box">Waiting for scan...</div>
+    <div id="scanned-text">Waiting for scan...</div>
   </div>
 
   <script>
     function onScanSuccess(decodedText, decodedResult) {
-      document.getElementById("result-box").innerText = decodedText;
+      document.getElementById("scanned-text").textContent = decodedText;
     }
 
-    let html5QrcodeScanner = new Html5QrcodeScanner(
-      "reader", { fps: 10, qrbox: 250 });
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", 
+      { fps: 10, qrbox: 250 }, 
+      false
+    );
+
     html5QrcodeScanner.render(onScanSuccess);
   </script>
+
 </body>
 </html>
