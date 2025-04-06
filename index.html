@@ -2,54 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>QR Code Scanner</title>
+  <title>Responsive QR Code Scanner</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      margin: 40px;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 40px;
+      margin: 0;
+      padding: 20px;
       background-color: #f4f4f4;
     }
-    #reader {
-      width: 320px;
-      border: 2px solid #ddd;
-      border-radius: 10px;
-      padding: 10px;
-      background-color: white;
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      align-items: flex-start;
     }
-    #result-panel {
-      width: 300px;
-      min-height: 160px;
+
+    .box {
+      flex: 1 1 300px;
+      max-width: 500px;
       background-color: white;
       padding: 20px;
-      border-radius: 10px;
-      border: 2px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    h2 {
-      margin-top: 0;
+
+    #reader {
+      width: 100%;
     }
+
     #scanned-text {
       font-size: 18px;
       word-break: break-word;
       color: #333;
+      margin-top: 10px;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      h2 {
+        font-size: 18px;
+      }
+      #scanned-text {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div>
-    <h2>QR Scanner</h2>
-    <div id="reader"></div>
-  </div>
-
-  <div id="result-panel">
-    <h2>Scanned Result</h2>
-    <div id="scanned-text">Waiting for scan...</div>
+  <div class="container">
+    <div class="box">
+      <h2>QR Scanner</h2>
+      <div id="reader"></div>
+    </div>
+    <div class="box">
+      <h2>Scanned Result</h2>
+      <div id="scanned-text">Waiting for scan...</div>
+    </div>
   </div>
 
   <script>
@@ -59,7 +81,7 @@
 
     const html5QrcodeScanner = new Html5QrcodeScanner(
       "reader", 
-      { fps: 10, qrbox: 250 }, 
+      { fps: 10, qrbox: { width: 250, height: 250 } }, 
       false
     );
 
