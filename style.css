@@ -1,5 +1,8 @@
+/* Import Pontano Sans from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Pontano+Sans&display=swap');
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Pontano Sans', sans-serif;
     text-align: center;
 }
 
