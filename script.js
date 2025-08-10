@@ -1,28 +1,20 @@
-const video = document.getElementById('preview');
-const canvasElement = document.getElementById('qr-canvas');
-const canvas = canvasElement.getContext('2d');
-const overlay = document.getElementById('id-overlay');
-const idName = document.getElementById('id-name');
-
-navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-    .then(function(stream) {
-        video.srcObject = stream;
-        video.setAttribute('playsinline', true);
-        video.play();
-        requestAnimationFrame(tick);
-    });
-
-function tick() {
-    if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvasElement.height = video.videoHeight;
-        canvasElement.width = video.videoWidth;
-        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-        const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
-        if (code) {
-            idName.textContent = code.data;
-            overlay.classList.remove('hidden');
-        }
-    }
-    requestAnimationFrame(tick);
+function onScanSuccess(decodedText, decodedResult) {
+    fetch('data.json')
+        .then(response => response.json())
+        .then(data => {
+            if (data[decodedText]) {
+                let person = data[decodedText];
+                document.getElementById("id-name").textContent = person.name;
+                document.getElementById("id-role").textContent = person.role;
+                document.getElementById("id-photo").src = person.photo;
+                document.getElementById("id-card").classList.remove("hidden");
+            } else {
+                alert("No record found for QR: " + decodedText);
+            }
+        });
 }
+
+let html5QrcodeScanner = new Html5QrcodeScanner(
+    "reader", { fps: 10, qrbox: 250 }
+);
+html5QrcodeScanner.render(onScanSuccess);

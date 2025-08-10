@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PTTF Umpire Tracker</title>
-    <link rel="stylesheet" href="style.css" />
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR ID Overlay</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
-    <h1>PTTF Umpire Tracker</h1>
-    <video id="preview" width="300" height="200"></video>
-    <canvas id="qr-canvas" hidden></canvas>
-    <div id="id-overlay" class="overlay hidden">
-        <img src="assets/id_template.png" alt="ID Template" />
-        <div id="id-name">Name Here</div>
-    </div>
-    <script src="script.js"></script>
+
+<h1>QR Code ID Overlay</h1>
+
+<div id="reader" style="width: 300px;"></div>
+
+<div id="id-card" class="hidden">
+    <img src="assets/id-template.png" class="id-template" alt="ID Template">
+    <div class="id-name" id="id-name"></div>
+    <div class="id-role" id="id-role"></div>
+    <img id="id-photo" class="id-photo" alt="ID Photo">
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
