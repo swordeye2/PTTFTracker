@@ -1,0 +1,30 @@
+/* Pontano Sans applied in index via Google Fonts link */
+:root{
+  --card-width: 420px;
+}
+*{box-sizing:border-box}
+body{
+  font-family: 'Pontano Sans', sans-serif;
+  margin:0;
+  padding:1.25rem;
+  text-align:center;
+  background:#fafafa;
+  color:#111;
+}
+header h1{
+  margin:0 0 1rem 0;
+  font-size:1.5rem;
+}
+.scanner{margin-bottom:1rem;}
+.hint{font-size:0.9rem;color:#555;}
+.card{position:relative;display:inline-block; width:var(--card-width);}
+.id-template{width:100%;display:block;}
+.id-photo{position:absolute; top:82px; left:36px; width:96px; height:120px; object-fit:cover; border-radius:4px; background:#ddd;}
+.id-name{position:absolute; top:206px; left:150px; font-size:18px; font-weight:700; color:#000;}
+.id-role{position:absolute; top:236px; left:150px; font-size:14px; color:#333;}
+.id-affil{position:absolute; top:258px; left:150px; font-size:12px; color:#666;}
+.hidden{display:none;}
+@media(max-width:480px){
+  :root{--card-width:320px}
+  .id-name{left:130px; font-size:16px}
+}

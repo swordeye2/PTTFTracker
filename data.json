@@ -1,0 +1,14 @@
+{
+  "12345": {
+    "name": "Juan Dela Cruz",
+    "role": "Umpire",
+    "affiliation": "PTTF",
+    "photo": "assets/sample1.jpg"
+  },
+  "67890": {
+    "name": "Maria Santos",
+    "role": "Head Umpire",
+    "affiliation": "PTTF",
+    "photo": "assets/sample2.jpg"
+  }
+}
