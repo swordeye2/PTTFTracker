@@ -10,6 +10,10 @@ body{
   text-align:center;
   background:#fafafa;
   color:#111;
+  background-image: url(https://www.shutterstock.com/shutterstock/photos/2466353991/display_1500/stock-photo-blue-table-tennis-with-bats-and-white-ball-inside-a-modern-sports-arena-illuminated-with-shining-2466353991.jpg); /* Replace 'your-image.jpg' with the path to your image */
+  background-repeat: no-repeat; /* Optional: prevents the image from repeating */
+  background-size: cover; /* Optional: scales the image to cover the entire element */
+  background-position: center; /* Optional: centers the image */
 }
 header h1{
   margin:0 0 1rem 0;
