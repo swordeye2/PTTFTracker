@@ -6,19 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PTTF Umpire Tracer</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
-<style>
-.my-div-with-background {
-  background-image: url('another-image.png'); /* Replace with your image path */
-  background-repeat: no-repeat;
-  background-size: contain; /* Optional: scales the image to fit within the element */
-  background-position: center;
-  height: 200px; /* Example height for the div */
-  width: 400px; /* Example width for the div */
-  border: 1px solid black;
-}
-</style>
 </head>
-  <div class="my-div-with-background">
 <body style="font-family: 'Pontano Sans', sans-serif; text-align: center; padding: 50px;">
     <h1>PTTF Umpire Tracer</h1>
     <div id="reader" style="width:300px;margin:auto;"></div>
@@ -37,6 +25,5 @@
             "reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess, onScanError);
     </script>
-  </div>
 </body>
 </html>
