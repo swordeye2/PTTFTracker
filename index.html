@@ -1,142 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>QR Code Scanner + Media Preview</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-    }
-
-    .box {
-      flex: 1 1 300px;
-      max-width: 500px;
-      background-color: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      margin-top: 0;
-      text-align: center;
-    }
-
-    #reader {
-      width: 100%;
-    }
-
-    #output {
-      font-size: 16px;
-      word-break: break-word;
-      margin-top: 10px;
-    }
-
-    iframe, video, img, audio {
-      width: 100%;
-      margin-top: 10px;
-      border-radius: 8px;
-    }
-
-    iframe {
-      height: 300px;
-      border: none;
-    }
-
-    @media (max-width: 600px) {
-      iframe {
-        height: 200px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR ID Overlay</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
 
-  <div class="container">
-    <div class="box">
-      <h2>QR Scanner</h2>
-      <div id="reader"></div>
-    </div>
-    <div class="box">
-      <h2>Scanned Result</h2>
-      <div id="output">Waiting for scan...</div>
-    </div>
-  </div>
+<h1>QR Code ID Overlay</h1>
 
-  <script>
-    function isImage(url) {
-      return /\.(jpeg|jpg|gif|png|webp)$/i.test(url);
-    }
+<div id="reader" style="width: 300px;"></div>
 
-    function isVideo(url) {
-      return /\.(mp4|webm|ogg)$/i.test(url);
-    }
+<div id="id-card" class="hidden">
+    <img src="assets/id-template.png" class="id-template" alt="ID Template">
+    <div class="id-name" id="id-name"></div>
+    <div class="id-role" id="id-role"></div>
+    <img id="id-photo" class="id-photo" alt="ID Photo">
+</div>
 
-    function isAudio(url) {
-      return /\.(mp3|wav|ogg)$/i.test(url);
-    }
-
-    function isPDF(url) {
-      return /\.pdf$/i.test(url);
-    }
-
-    function getYouTubeEmbedURL(url) {
-      let videoId = "";
-
-      if (url.includes("youtube.com/watch?v=")) {
-        videoId = new URL(url).searchParams.get("v");
-      } else if (url.includes("youtu.be/")) {
-        videoId = url.split("youtu.be/")[1].split("?")[0];
-      }
-
-      return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : null;
-    }
-
-    function onScanSuccess(decodedText) {
-      const output = document.getElementById("output");
-      let content = `<p><strong>Scanned:</strong> <a href="${decodedText}" target="_blank">${decodedText}</a></p>`;
-
-      const ytEmbed = getYouTubeEmbedURL(decodedText);
-
-      if (isImage(decodedText)) {
-        content += `<img src="${decodedText}" alt="Scanned Image">`;
-      } else if (isVideo(decodedText)) {
-        content += `<video controls><source src="${decodedText}"></video>`;
-      } else if (isAudio(decodedText)) {
-        content += `<audio controls><source src="${decodedText}"></audio>`;
-      } else if (isPDF(decodedText)) {
-        content += `<iframe src="${decodedText}"></iframe>`;
-      } else if (ytEmbed) {
-        content += `<iframe src="${ytEmbed}" allowfullscreen></iframe>`;
-      } else if (decodedText.startsWith("http")) {
-        content += `<iframe src="${decodedText}"></iframe>`;
-      }
-
-      output.innerHTML = content;
-    }
-
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-      "reader",
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      false
-    );
-
-    html5QrcodeScanner.render(onScanSuccess);
-  </script>
-
+<script src="script.js"></script>
 </body>
 </html>
