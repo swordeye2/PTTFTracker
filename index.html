@@ -1,108 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Scanner with ID Display</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-image: url('images/background.jpg'); /* GitHub folder image */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background-color: rgba(255, 255, 255, 0.85);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            text-align: center;
-            max-width: 350px;
-            width: 100%;
-        }
-        #preview {
-            width: 100%;
-            border-radius: 8px;
-        }
-        .id-card {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f4f4f4;
-            border-radius: 8px;
-            display: none;
-        }
-        .id-card img {
-            width: 100%;
-            border-radius: 8px;
-        }
-        .id-info {
-            margin-top: 10px;
-            text-align: left;
-        }
-        .id-info p {
-            margin: 4px 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PTTF Umpire Tracker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url('images/background.jpg') center/cover no-repeat;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.85);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      text-align: center;
+      max-width: 350px;
+      width: 100%;
+    }
+    #preview {
+      width: 100%;
+      height: 250px;
+      background: #000;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .id-card {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f4f4f4;
+      border-radius: 8px;
+      display: none;
+    }
+    .id-card img {
+      width: 100%;
+      border-radius: 8px;
+    }
+    .id-info {
+      margin-top: 10px;
+      text-align: left;
+    }
+    .id-info p {
+      margin: 4px 0;
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>QR Code Scanner</h2>
-    <video id="preview" autoplay playsinline style="width:100%; height:250px; background:#000; border-radius:8px;"></video>
+  <div class="container">
+    <h2>PTTF Umpire Tracker</h2>
+    <video id="preview" autoplay playsinline></video>
     
     <div class="id-card" id="idCard">
-        <img id="idImage" src="images/id_placeholder.jpg" alt="ID Card">
-        <div class="id-info">
-            <p><strong>Name:</strong> <span id="name">---</span></p>
-            <p><strong>ID Number:</strong> <span id="idNumber">---</span></p>
-            <p><strong>Course:</strong> <span id="course">---</span></p>
-        </div>
+      <img id="idImage" src="images/id_placeholder.jpg" alt="ID Card">
+      <div class="id-info">
+        <p><strong>Name:</strong> <span id="name">---</span></p>
+        <p><strong>ID Number:</strong> <span id="idNumber">---</span></p>
+        <p><strong>Umpire Class:</strong> <span id="course">---</span></p>
+        <p><strong>Status:</strong> <span id="course">---</span></p>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Instascan Library -->
-<script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
-<script>
-    let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
-    scanner.addListener('scan', function (content) {
-        console.log('Scanned QR code:', content);
+  <!-- Instascan Library -->
+  <script src="https://cdn.jsdelivr.net/npm/instascan@1.0.0/instascan.min.js"></script>
+  <script>
+    const videoElement = document.getElementById('preview');
+    const idCard = document.getElementById('idCard');
+    const idImage = document.getElementById('idImage');
+    const nameField = document.getElementById('name');
+    const idNumberField = document.getElementById('idNumber');
+    const courseField = document.getElementById('course');
 
-        // Placeholder: Replace with Google Sheets fetch logic
-        // Example: Simulating data retrieval
-        let studentData = {
-            name: "Juan Dela Cruz",
-            idNumber: "2025-001",
-            course: "BS Computer Science",
-            image: "images/sample_id.jpg" // Placeholder in GitHub folder
-        };
+    const scanner = new Instascan.Scanner({ video: videoElement });
 
-        // Update ID Card display
-        document.getElementById('name').innerText = studentData.name;
-        document.getElementById('idNumber').innerText = studentData.idNumber;
-        document.getElementById('course').innerText = studentData.course;
-        document.getElementById('idImage').src = studentData.image;
-        document.getElementById('idCard').style.display = 'block';
+    scanner.addListener('scan', content => {
+      console.log('Scanned QR code:', content);
+
+      // TODO: Replace with actual fetch from Google Sheets or API
+      const studentData = {
+        name: "Juan Dela Cruz",
+        idNumber: "2025-001",
+        course: "BS Computer Science",
+        image: "images/sample_id.jpg"
+      };
+
+      // Update UI
+      nameField.textContent = studentData.name;
+      idNumberField.textContent = studentData.idNumber;
+      courseField.textContent = studentData.course;
+      idImage.src = studentData.image;
+      idCard.style.display = 'block';
     });
 
-    Instascan.Camera.getCameras().then(function (cameras) {
-    if (cameras.length > 0) {
-        scanner.start(cameras[0]);
-    } else {
-        alert('No cameras found.');
-    }
-}).catch(function (e) {
-    console.error(e);
-    alert("Error accessing camera: " + e);
-});
-   
-</script>
-
+    Instascan.Camera.getCameras()
+      .then(cameras => {
+        if (cameras.length > 0) {
+          scanner.start(cameras[0]); // Use first available camera
+        } else {
+          alert('No cameras found.');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Error accessing camera: " + err);
+      });
+  </script>
 </body>
 </html>
