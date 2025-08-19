@@ -48,6 +48,16 @@
     .id-info p {
       margin: 4px 0;
     }
+    .controls {
+      margin-top: 10px;
+    }
+    select {
+      padding: 5px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      font-size: 14px;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -55,14 +65,20 @@
   <div class="container">
     <h2>PTTF Umpire Tracker</h2>
     <video id="preview" autoplay playsinline></video>
+
+    <!-- Camera selector -->
+    <div class="controls">
+      <label for="cameraSelect"><strong>Select Camera:</strong></label>
+      <select id="cameraSelect"></select>
+    </div>
     
     <div class="id-card" id="idCard">
       <img id="idImage" src="images/id_placeholder.jpg" alt="ID Card">
       <div class="id-info">
         <p><strong>Name:</strong> <span id="name">---</span></p>
         <p><strong>ID Number:</strong> <span id="idNumber">---</span></p>
-        <p><strong>Umpire Class:</strong> <span id="course">---</span></p>
-        <p><strong>Status:</strong> <span id="course">---</span></p>
+        <p><strong>Umpire Class:</strong> <span id="umpireClass">---</span></p>
+        <p><strong>Status:</strong> <span id="status">---</span></p>
       </div>
     </div>
   </div>
@@ -75,7 +91,9 @@
     const idImage = document.getElementById('idImage');
     const nameField = document.getElementById('name');
     const idNumberField = document.getElementById('idNumber');
-    const courseField = document.getElementById('course');
+    const umpireClassField = document.getElementById('umpireClass');
+    const statusField = document.getElementById('status');
+    const cameraSelect = document.getElementById('cameraSelect');
 
     const scanner = new Instascan.Scanner({ video: videoElement });
 
@@ -83,25 +101,53 @@
       console.log('Scanned QR code:', content);
 
       // TODO: Replace with actual fetch from Google Sheets or API
-      const studentData = {
+      const umpireData = {
         name: "Juan Dela Cruz",
         idNumber: "2025-001",
-        course: "BS Computer Science",
+        umpireClass: "National Umpire",
+        status: "Active",
         image: "images/sample_id.jpg"
       };
 
       // Update UI
-      nameField.textContent = studentData.name;
-      idNumberField.textContent = studentData.idNumber;
-      courseField.textContent = studentData.course;
-      idImage.src = studentData.image;
+      nameField.textContent = umpireData.name;
+      idNumberField.textContent = umpireData.idNumber;
+      umpireClassField.textContent = umpireData.umpireClass;
+      statusField.textContent = umpireData.status;
+      idImage.src = umpireData.image;
       idCard.style.display = 'block';
     });
 
+    // Load available cameras
     Instascan.Camera.getCameras()
       .then(cameras => {
         if (cameras.length > 0) {
-          scanner.start(cameras[0]); // Use first available camera
+          // Populate dropdown
+          cameras.forEach((cam, i) => {
+            const option = document.createElement('option');
+            option.value = i;
+            option.text = cam.name || `Camera ${i + 1}`;
+            cameraSelect.appendChild(option);
+          });
+
+          // Try to auto-select rear camera if available
+          let defaultCamIndex = 0;
+          cameras.forEach((cam, i) => {
+            if (cam.name.toLowerCase().includes('back') ||
+                cam.name.toLowerCase().includes('rear') ||
+                cam.name.toLowerCase().includes('environment')) {
+              defaultCamIndex = i;
+            }
+          });
+
+          cameraSelect.selectedIndex = defaultCamIndex;
+          scanner.start(cameras[defaultCamIndex]);
+
+          // Change camera when user selects
+          cameraSelect.addEventListener('change', e => {
+            scanner.start(cameras[e.target.value]);
+          });
+
         } else {
           alert('No cameras found.');
         }
