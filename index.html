@@ -5,54 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PTTF Umpire Verifier</title>
   <style>
-body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-image: url('images/background.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  min-height: 100vh;
-  margin: 0;
-}
-
-    #reader {
-      width: 400px;
-      height: 400px;
-      margin-bottom: 20px;
-      border: 2px solid #444;
-      border-radius: 10px;
-      background: #fff;
+    body {
+      font-family: Arial, sans-serif;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      background-image: url('images/background.png');
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: contain;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
     }
 
-  #id-card {
-    width: 450px;
-    border: 2px solid #333;
-    border-radius: 10px;
-    background: white;
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    text-align: left; /* This makes all the text flush left */
-  }
-
-    #id-photo {
-      width: 180px;
-      height: 180px;
-      object-fit: cover;
-      margin-bottom: 15px;
-      border: 2px solid #000;
-      border-radius: 5px;
-    }
-
-    .info {
-      font-size: 18px;
-      margin: 5px 0;
+    h2 {
+      margin: 1rem 0;
+      text-align: center;
     }
 
     #start-scan {
@@ -63,23 +34,66 @@ body {
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-bottom: 15px;
+      margin-bottom: 1rem;
+    }
+    #start-scan:hover { background: #004999; }
+
+    #reader {
+      width: 90vw;
+      max-width: 400px;
+      height: 90vw;
+      max-height: 400px;
+      margin-bottom: 20px;
+      border: 2px solid #444;
+      border-radius: 10px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    #start-scan:hover {
-      background: #004999;
+    #id-card {
+      width: 95vw;
+      max-width: 450px;
+      border: 2px solid #333;
+      border-radius: 10px;
+      background: white;
+      padding: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    #id-photo {
+      width: 30vw;
+      max-width: 180px;
+      height: auto;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border: 2px solid #000;
+      border-radius: 5px;
+    }
+
+    .info {
+      font-size: 4vw;
+      max-font-size: 18px;
+      margin: 5px 0;
+      word-wrap: break-word;
+    }
+
+    @media (min-width: 600px) {
+      .info { font-size: 18px; }
+      #id-photo { width: 180px; height: 180px; }
+      #reader { width: 400px; height: 400px; }
     }
   </style>
 </head>
 <body>
   <h2>PTTF Umpire Verifier</h2>
-
   <button id="start-scan">Start QR Scan</button>
-
   <div id="reader">
     <img id="id-placeholder" src="images/QR.png" alt="Waiting for scan..." style="width:100%; height:100%; object-fit:contain;">
   </div>
-
   <div id="id-card">
     <img id="id-photo" src="images/1placeholder.png" alt="ID Photo">
     <div class="info" id="surname">Surname: -</div>
@@ -96,47 +110,23 @@ body {
   <script>
     let html5QrCode;
     let scanning = false;
-
-    // Replace this URL with your GitHub-hosted JSON
     const JSON_URL = "https://raw.githubusercontent.com/swordeye2/PTTFTracker/main/umpires.json";
-
     let umpireData = [];
 
-    // Load JSON once at start
     fetch(JSON_URL)
-      .then(response => response.json())
-      .then(data => {
-        umpireData = data;
-        console.log("Database loaded:", umpireData.length, "records");
-      })
-      .catch(err => {
-        console.error("Failed to load database:", err);
-        alert("Failed to load database. Check your JSON URL.");
-      });
+      .then(res => res.json())
+      .then(data => { umpireData = data; console.log("Loaded:", umpireData.length, "records"); })
+      .catch(err => { console.error("Failed to load JSON:", err); alert("Failed to load database."); });
 
     document.getElementById("start-scan").addEventListener("click", startScanner);
 
     function startScanner() {
       if (scanning) return;
-
       html5QrCode = new Html5Qrcode("reader");
-
-      const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-        stopScanner();
-        displayUmpire(decodedText);
-      };
-
-      const config = { facingMode: "environment" };
-
-      html5QrCode.start(
-        config,
-        { fps: 10, qrbox: { width: 350, height: 350 } },
-        qrCodeSuccessCallback
-      ).then(() => scanning = true)
-      .catch(err => {
-        console.error("Camera error:", err);
-        alert("Unable to access camera. Check permissions.");
-      });
+      const qrCodeSuccessCallback = (decodedText) => { stopScanner(); displayUmpire(decodedText); };
+      html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 350, height: 350 } }, qrCodeSuccessCallback)
+        .then(() => scanning = true)
+        .catch(err => { console.error("Camera error:", err); alert("Unable to access camera."); });
     }
 
     function stopScanner() {
@@ -145,13 +135,12 @@ body {
           scanning = false;
           document.getElementById("reader").innerHTML =
             '<img id="id-placeholder" src="images/id_placeholder.png" alt="Waiting for scan..." style="width:100%; height:100%; object-fit:contain;">';
-        }).catch(err => console.error("Stop failed", err));
+        }).catch(err => console.error(err));
       }
     }
 
     function displayUmpire(code) {
       const record = umpireData.find(u => u["Access Code"].toString() === code.toString());
-
       if (record) {
         document.getElementById("surname").textContent = "Surname: " + record.Surname;
         document.getElementById("givenName").textContent = "Given Name: " + record["Given Name"];
@@ -163,7 +152,7 @@ body {
         document.getElementById("status").textContent = "Status: " + record.Status;
         document.getElementById("id-photo").src = record.Photo || "images/id_placeholder.png";
       } else {
-        alert("No record found for this code: " + code);
+        alert("No record found for code: " + code);
       }
     }
   </script>
