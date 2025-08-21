@@ -4,18 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PTTF Umpire Tracker</title>
+
+  <!-- Instascan (QR) -->
+  <script src="https://cdn.jsdelivr.net/npm/instascan@1.0.0/instascan.min.js"></script>
+
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: url('images/background.png') center/cover no-repeat fixed;
+      background: url('images/background.jpg') center/cover no-repeat fixed;
       color: #333;
       text-align: center;
       padding: 20px;
     }
-    h1 {
-      margin-bottom: 20px;
-    }
+    h1 { margin-bottom: 16px; }
+
+    /* Scanner / Placeholder */
     #preview, #standbyImage {
       width: 100%;
       max-width: 500px;
@@ -25,11 +29,31 @@
       object-fit: cover;
       margin: 0 auto;
       display: block;
-    }
-    #preview {
-      display: none;
       background: #000;
     }
+    #preview { display: none; }
+    #standbyImage {
+      object-fit: contain;
+      image-rendering: crisp-edges;
+      background: #111;
+    }
+
+    /* Buttons */
+    .btn {
+      margin: 12px 8px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+    }
+    #startBtn { background: #007bff; }
+    #startBtn:hover { background: #0056b3; }
+    #stopBtn { background: #dc3545; display: none; }
+    #stopBtn:hover { background: #a71d2a; }
+
+    /* ID card */
     #id-card {
       width: 500px;
       padding: 20px;
@@ -41,147 +65,179 @@
       text-align: center;
       display: none;
     }
-    #id-card h2 {
-      margin: 10px 0;
-      font-size: 1.8em;
-    }
-    #id-card p {
-      margin: 6px 0;
-      font-size: 1.2em;
-    }
+    #id-card h2 { margin: 10px 0; font-size: 1.6em; }
+    #id-card p { margin: 6px 0; font-size: 1.05em; }
     #id-photo {
-      width: 150px;
-      height: 150px;
+      width: 150px; height: 150px;
       object-fit: cover;
       border-radius: 50%;
       border: 2px solid #333;
       margin-bottom: 12px;
-    }
-    .btn {
-      margin: 15px 10px;
-      padding: 12px 24px;
-      font-size: 1.2em;
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      cursor: pointer;
-    }
-    #startBtn {
-      background: #007bff;
-    }
-    #startBtn:hover {
-      background: #0056b3;
-    }
-    #stopBtn {
-      background: #dc3545;
-      display: none;
-    }
-    #stopBtn:hover {
-      background: #a71d2a;
+      background: #eee;
     }
   </style>
 </head>
 <body>
   <h1>PTTF Umpire Tracker</h1>
-  
-  <!-- Standby image shown before scanning -->
+
+  <!-- Standby image (shown before scanning) -->
   <img id="standbyImage" src="images/id_placeholder.png" alt="Standby Placeholder">
 
-  <!-- Buttons -->
-  <button id="startBtn" class="btn">Start QR Scan</button>
-  <button id="stopBtn" class="btn">Stop Scan</button>
+  <!-- Controls -->
+  <div>
+    <button id="startBtn" class="btn">Start QR Scan</button>
+    <button id="stopBtn" class="btn">Stop Scan</button>
+  </div>
 
   <!-- Scanner video -->
-  <video id="preview"></video>
+  <video id="preview" playsinline></video>
 
   <!-- ID card display -->
   <div id="id-card">
-    <img id="id-photo" src="" alt="Profile Photo">
+    <img id="id-photo" src="images/id_placeholder.png" alt="Profile Photo">
     <h2 id="full-name">Full Name</h2>
-    <p><strong>Address:</strong> <span id="address"></span></p>
-    <p><strong>Birthday:</strong> <span id="birthday"></span></p>
-    <p><strong>Sex:</strong> <span id="sex"></span></p>
-    <p><strong>Umpire Class:</strong> <span id="umpireClass"></span></p>
-    <p><strong>Status:</strong> <span id="status"></span></p>
+    <p><strong>ID (QR):</strong> <span id="qr-id">—</span></p>
+    <p><strong>Address:</strong> <span id="address">—</span></p>
+    <p><strong>Birthday:</strong> <span id="birthday">—</span></p>
+    <p><strong>Sex:</strong> <span id="sex">—</span></p>
+    <p><strong>Umpire Class:</strong> <span id="umpireClass">—</span></p>
+    <p><strong>Status:</strong> <span id="status">—</span></p>
   </div>
 
-  <!-- Instascan library -->
-  <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
   <script>
     const standbyImage = document.getElementById('standbyImage');
     const preview = document.getElementById('preview');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
     const idCard = document.getElementById('id-card');
+    const photoEl = document.getElementById('id-photo');
     const fullNameEl = document.getElementById('full-name');
+    const qrIdEl = document.getElementById('qr-id');
     const addressEl = document.getElementById('address');
     const birthdayEl = document.getElementById('birthday');
     const sexEl = document.getElementById('sex');
     const umpireClassEl = document.getElementById('umpireClass');
     const statusEl = document.getElementById('status');
-    const idPhotoEl = document.getElementById('id-photo');
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
 
-    let scanner;
+    const API_BASE = 'https://script.google.com/macros/s/AKfycbz-3ySdh3DBoe2St_NhNpCHlsREN36b5TAUMFiO8BqRQjrhePfWCXThEt4lDRHTLQrz/exec';
 
-    // Start Scan
-    startBtn.addEventListener("click", () => {
-      startBtn.style.display = 'none';
-      stopBtn.style.display = 'inline-block';
-      standbyImage.style.display = 'none';
-      preview.style.display = 'block';
-      idCard.style.display = 'none';
+    let scanner = null;
+    let activeCamera = null;
 
-      scanner = new Instascan.Scanner({ video: preview });
-      scanner.addListener('scan', function (content) {
-        fetchData(content);
-      });
+    // Heuristic to choose rear camera when available
+    function pickRearCamera(cameras) {
+      if (!cameras || !cameras.length) return null;
 
-      Instascan.Camera.getCameras().then(function (cameras) {
-        if (cameras.length > 0) {
-          scanner.start(cameras[0]);
-        } else {
-          alert('No cameras found.');
+      // Prefer names that look like rear cams
+      const rear = cameras.find(c =>
+        (c.name || '').toLowerCase().match(/back|rear|environment/i)
+      );
+      if (rear) return rear;
+
+      // On many mobiles, the rear cam is last
+      return cameras[cameras.length - 1];
+    }
+
+    // Start scanning
+    startBtn.addEventListener('click', async () => {
+      try {
+        startBtn.style.display = 'none';
+        stopBtn.style.display = 'inline-block';
+        standbyImage.style.display = 'none';
+        preview.style.display = 'block';
+        idCard.style.display = 'none';
+
+        scanner = new Instascan.Scanner({ video: preview, scanPeriod: 5, mirror: false });
+
+        // On scan, stop and fetch data
+        scanner.addListener('scan', (content) => {
+          stopScanner();
+          fetchAndRender(content);
+        });
+
+        const cameras = await Instascan.Camera.getCameras();
+        if (!cameras.length) {
+          throw new Error('No cameras found');
         }
-      }).catch(function (e) {
-        console.error(e);
-      });
+
+        activeCamera = pickRearCamera(cameras);
+        if (!activeCamera) activeCamera = cameras[0];
+
+        await scanner.start(activeCamera);
+      } catch (err) {
+        console.error('Error starting scan:', err);
+        alert('Unable to start camera. Make sure you are on HTTPS and camera permission is granted.');
+        // Reset UI
+        preview.style.display = 'none';
+        standbyImage.style.display = 'block';
+        startBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'none';
+      }
     });
 
-    // Stop Scan
-    stopBtn.addEventListener("click", () => {
-      if (scanner) {
-        scanner.stop();
+    // Stop scanning / back to standby
+    stopBtn.addEventListener('click', stopScanner);
+
+    async function stopScanner() {
+      try {
+        if (scanner) {
+          await scanner.stop();
+        }
+      } catch (e) {
+        console.warn('Scanner stop warning:', e);
       }
       preview.style.display = 'none';
       stopBtn.style.display = 'none';
       standbyImage.style.display = 'block';
       startBtn.style.display = 'inline-block';
-      idCard.style.display = 'none';
-    });
+    }
 
-    // Fetch from Google Apps Script
-    async function fetchData(qrValue) {
+    // Robustly handle both object or array responses
+    function normalizeRecord(data) {
+      if (!data) return null;
+      if (Array.isArray(data)) return data[0] || null;
+      return data;
+    }
+
+    async function fetchAndRender(qrValue) {
       try {
-        const url = "https://script.google.com/macros/s/AKfycbz-3ySdh3DBoe2St_NhNpCHlsREN36b5TAUMFiO8BqRQjrhePfWCXThEt4lDRHTLQrz/exec?qr=" + encodeURIComponent(qrValue);
-        const res = await fetch(url);
-        const data = await res.json();
+        qrIdEl.textContent = qrValue;
 
-        if (data && data.length > 0) {
-          const umpire = data[0];
-          fullNameEl.textContent = umpire["Given Name"] + " " + umpire["Middle Name"] + " " + umpire["Surname"];
-          addressEl.textContent = umpire["Address"];
-          birthdayEl.textContent = umpire["Birthday"];
-          sexEl.textContent = umpire["Sex"];
-          umpireClassEl.textContent = umpire["UmpireClass"];
-          statusEl.textContent = umpire["Status"];
-          idPhotoEl.src = umpire["Photo"] || "images/id_placeholder.png";
+        const url = `${API_BASE}?qr=${encodeURIComponent(qrValue)}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        const raw = await res.json();
+        const umpire = normalizeRecord(raw);
 
-          idCard.style.display = 'block';
-        } else {
-          alert("No record found for this QR code.");
+        if (!umpire || (!umpire['Given Name'] && !umpire['GivenName'] && !umpire['Name'])) {
+          alert('No record found for this QR code.');
+          idCard.style.display = 'none';
+          return;
         }
+
+        // Handle different possible header spellings gracefully
+        const given = umpire['Given Name'] || umpire['GivenName'] || '';
+        const middle = umpire['Middle Name'] || umpire['MiddleName'] || '';
+        const surname = umpire['Surname'] || umpire['Last Name'] || umpire['LastName'] || '';
+        const address = umpire['Address'] || '';
+        const birthday = umpire['Birthday'] || '';
+        const sex = umpire['Sex'] || '';
+        const uclass = umpire['UmpireClass'] || umpire['Umpire Class'] || '';
+        const status = umpire['Status'] || '';
+        const photo = umpire['PhotoURL'] || umpire['Photo'] || '';
+
+        fullNameEl.textContent = [given, middle, surname].filter(Boolean).join(' ');
+        addressEl.textContent = address;
+        birthdayEl.textContent = birthday;
+        sexEl.textContent = sex;
+        umpireClassEl.textContent = uclass;
+        statusEl.textContent = status;
+        photoEl.src = photo || 'images/id_placeholder.png';
+
+        idCard.style.display = 'block';
       } catch (err) {
-        console.error(err);
+        console.error('Fetch error:', err);
+        alert('Error fetching data for this QR. Please try again.');
       }
     }
   </script>
