@@ -1,244 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PTTF Umpire Tracker</title>
-
-  <!-- Instascan (QR) -->
-  <script src="https://cdn.jsdelivr.net/npm/instascan@1.0.0/instascan.min.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code ID Scanner</title>
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      background: url('images/background.jpg') center/cover no-repeat fixed;
-      color: #333;
-      text-align: center;
-      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0f0f0;
+      min-height: 100vh;
+      margin: 0;
     }
-    h1 { margin-bottom: 16px; }
 
-    /* Scanner / Placeholder */
-    #preview, #standbyImage {
-      width: 100%;
-      max-width: 500px;
+    #reader {
+      width: 400px;
       height: 400px;
-      border-radius: 12px;
-      border: 3px solid #333;
-      object-fit: cover;
-      margin: 0 auto;
-      display: block;
-      background: #000;
-    }
-    #preview { display: none; }
-    #standbyImage {
-      object-fit: contain;
-      image-rendering: crisp-edges;
-      background: #111;
-    }
-
-    /* Buttons */
-    .btn {
-      margin: 12px 8px;
-      padding: 12px 18px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      cursor: pointer;
-    }
-    #startBtn { background: #007bff; }
-    #startBtn:hover { background: #0056b3; }
-    #stopBtn { background: #dc3545; display: none; }
-    #stopBtn:hover { background: #a71d2a; }
-
-    /* ID card */
-    #id-card {
-      width: 500px;
-      padding: 20px;
+      margin-bottom: 20px;
+      border: 2px solid #444;
+      border-radius: 10px;
       background: #fff;
-      border: 2px solid #333;
-      border-radius: 16px;
-      box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
-      margin: 20px auto;
-      text-align: center;
-      display: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    #id-card h2 { margin: 10px 0; font-size: 1.6em; }
-    #id-card p { margin: 6px 0; font-size: 1.05em; }
-    #id-photo {
-      width: 150px; height: 150px;
-      object-fit: cover;
-      border-radius: 50%;
+
+    #id-card {
+      width: 450px;
       border: 2px solid #333;
-      margin-bottom: 12px;
-      background: #eee;
+      border-radius: 10px;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    #id-photo {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      margin-bottom: 15px;
+      border: 2px solid #000;
+      border-radius: 5px;
+    }
+
+    .info {
+      font-size: 18px;
+      margin: 5px 0;
+    }
+
+    #start-scan {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+
+    #start-scan:hover {
+      background: #004999;
     }
   </style>
 </head>
 <body>
-  <h1>PTTF Umpire Tracker</h1>
+  <h2>QR Code ID Scanner</h2>
 
-  <!-- Standby image (shown before scanning) -->
-  <img id="standbyImage" src="images/id_placeholder.png" alt="Standby Placeholder">
+  <button id="start-scan">Start QR Scan</button>
 
-  <!-- Controls -->
-  <div>
-    <button id="startBtn" class="btn">Start QR Scan</button>
-    <button id="stopBtn" class="btn">Stop Scan</button>
+  <div id="reader">
+    <img id="id-placeholder" src="id_placeholder.png" alt="Waiting for scan..." style="width:100%; height:100%; object-fit:contain;">
   </div>
 
-  <!-- Scanner video -->
-  <video id="preview" playsinline></video>
-
-  <!-- ID card display -->
   <div id="id-card">
-    <img id="id-photo" src="images/id_placeholder.png" alt="Profile Photo">
-    <h2 id="full-name">Full Name</h2>
-    <p><strong>ID (QR):</strong> <span id="qr-id">—</span></p>
-    <p><strong>Address:</strong> <span id="address">—</span></p>
-    <p><strong>Birthday:</strong> <span id="birthday">—</span></p>
-    <p><strong>Sex:</strong> <span id="sex">—</span></p>
-    <p><strong>Umpire Class:</strong> <span id="umpireClass">—</span></p>
-    <p><strong>Status:</strong> <span id="status">—</span></p>
+    <img id="id-photo" src="id_placeholder.png" alt="ID Photo">
+    <div class="info" id="surname">Surname: -</div>
+    <div class="info" id="givenName">Given Name: -</div>
+    <div class="info" id="middleName">Middle Name: -</div>
+    <div class="info" id="address">Address: -</div>
+    <div class="info" id="birthday">Birthday: -</div>
+    <div class="info" id="sex">Sex: -</div>
+    <div class="info" id="umpireClass">Umpire Class: -</div>
+    <div class="info" id="status">Status: -</div>
   </div>
 
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script>
-    const standbyImage = document.getElementById('standbyImage');
-    const preview = document.getElementById('preview');
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
+    let html5QrCode;
+    let scanning = false;
 
-    const idCard = document.getElementById('id-card');
-    const photoEl = document.getElementById('id-photo');
-    const fullNameEl = document.getElementById('full-name');
-    const qrIdEl = document.getElementById('qr-id');
-    const addressEl = document.getElementById('address');
-    const birthdayEl = document.getElementById('birthday');
-    const sexEl = document.getElementById('sex');
-    const umpireClassEl = document.getElementById('umpireClass');
-    const statusEl = document.getElementById('status');
+    document.getElementById("start-scan").addEventListener("click", startScanner);
 
-    const API_BASE = 'https://script.google.com/macros/s/AKfycbz-3ySdh3DBoe2St_NhNpCHlsREN36b5TAUMFiO8BqRQjrhePfWCXThEt4lDRHTLQrz/exec';
+    function startScanner() {
+      if (scanning) return; // prevent multiple scans
 
-    let scanner = null;
-    let activeCamera = null;
+      html5QrCode = new Html5Qrcode("reader");
 
-    // Heuristic to choose rear camera when available
-    function pickRearCamera(cameras) {
-      if (!cameras || !cameras.length) return null;
+      const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+        stopScanner();
+        fetchDetails(decodedText);
+      };
 
-      // Prefer names that look like rear cams
-      const rear = cameras.find(c =>
-        (c.name || '').toLowerCase().match(/back|rear|environment/i)
-      );
-      if (rear) return rear;
+      // Prefer back camera, fallback to any available
+      const config = { facingMode: "environment" };
 
-      // On many mobiles, the rear cam is last
-      return cameras[cameras.length - 1];
+      html5QrCode.start(
+        config,
+        {
+          fps: 10,
+          qrbox: { width: 350, height: 350 }
+        },
+        qrCodeSuccessCallback
+      ).then(() => {
+        scanning = true;
+      }).catch(err => {
+        console.error("Camera start error:", err);
+        alert("Unable to access camera. Please check browser permissions.");
+      });
     }
 
-    // Start scanning
-    startBtn.addEventListener('click', async () => {
-      try {
-        startBtn.style.display = 'none';
-        stopBtn.style.display = 'inline-block';
-        standbyImage.style.display = 'none';
-        preview.style.display = 'block';
-        idCard.style.display = 'none';
+    function stopScanner() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          scanning = false;
+          document.getElementById("reader").innerHTML =
+            '<img id="id-placeholder" src="id_placeholder.png" alt="Waiting for scan..." style="width:100%; height:100%; object-fit:contain;">';
+        }).catch(err => console.error("Stop failed", err));
+      }
+    }
 
-        scanner = new Instascan.Scanner({ video: preview, scanPeriod: 5, mirror: false });
+    function fetchDetails(accessCode) {
+      const apiUrl = "https://script.google.com/macros/s/AKfycbz-3ySdh3DBoe2St_NhNpCHlsREN36b5TAUMFiO8BqRQjrhePfWCXThEt4lDRHTLQrz/exec?code=" + encodeURIComponent(accessCode);
 
-        // On scan, stop and fetch data
-        scanner.addListener('scan', (content) => {
-          stopScanner();
-          fetchAndRender(content);
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.Surname) {
+            document.getElementById("surname").textContent = "Surname: " + data.Surname;
+            document.getElementById("givenName").textContent = "Given Name: " + data["Given Name"];
+            document.getElementById("middleName").textContent = "Middle Name: " + data["Middle Name"];
+            document.getElementById("address").textContent = "Address: " + data.Address;
+            document.getElementById("birthday").textContent = "Birthday: " + data.Birthday;
+            document.getElementById("sex").textContent = "Sex: " + data.Sex;
+            document.getElementById("umpireClass").textContent = "Umpire Class: " + data.UmpireClass;
+            document.getElementById("status").textContent = "Status: " + data.Status;
+            document.getElementById("id-photo").src = data.Photo || "placeholder.png";
+          } else {
+            alert("No record found for this code.");
+          }
+        })
+        .catch(err => {
+          console.error("Fetch error:", err);
+          alert("Failed to fetch details.");
         });
-
-        const cameras = await Instascan.Camera.getCameras();
-        if (!cameras.length) {
-          throw new Error('No cameras found');
-        }
-
-        activeCamera = pickRearCamera(cameras);
-        if (!activeCamera) activeCamera = cameras[0];
-
-        await scanner.start(activeCamera);
-      } catch (err) {
-        console.error('Error starting scan:', err);
-        alert('Unable to start camera. Make sure you are on HTTPS and camera permission is granted.');
-        // Reset UI
-        preview.style.display = 'none';
-        standbyImage.style.display = 'block';
-        startBtn.style.display = 'inline-block';
-        stopBtn.style.display = 'none';
-      }
-    });
-
-    // Stop scanning / back to standby
-    stopBtn.addEventListener('click', stopScanner);
-
-    async function stopScanner() {
-      try {
-        if (scanner) {
-          await scanner.stop();
-        }
-      } catch (e) {
-        console.warn('Scanner stop warning:', e);
-      }
-      preview.style.display = 'none';
-      stopBtn.style.display = 'none';
-      standbyImage.style.display = 'block';
-      startBtn.style.display = 'inline-block';
-    }
-
-    // Robustly handle both object or array responses
-    function normalizeRecord(data) {
-      if (!data) return null;
-      if (Array.isArray(data)) return data[0] || null;
-      return data;
-    }
-
-    async function fetchAndRender(qrValue) {
-      try {
-        qrIdEl.textContent = qrValue;
-
-        const url = `${API_BASE}?qr=${encodeURIComponent(qrValue)}`;
-        const res = await fetch(url, { cache: 'no-store' });
-        const raw = await res.json();
-        const umpire = normalizeRecord(raw);
-
-        if (!umpire || (!umpire['Given Name'] && !umpire['GivenName'] && !umpire['Name'])) {
-          alert('No record found for this QR code.');
-          idCard.style.display = 'none';
-          return;
-        }
-
-        // Handle different possible header spellings gracefully
-        const given = umpire['Given Name'] || umpire['GivenName'] || '';
-        const middle = umpire['Middle Name'] || umpire['MiddleName'] || '';
-        const surname = umpire['Surname'] || umpire['Last Name'] || umpire['LastName'] || '';
-        const address = umpire['Address'] || '';
-        const birthday = umpire['Birthday'] || '';
-        const sex = umpire['Sex'] || '';
-        const uclass = umpire['UmpireClass'] || umpire['Umpire Class'] || '';
-        const status = umpire['Status'] || '';
-        const photo = umpire['PhotoURL'] || umpire['Photo'] || '';
-
-        fullNameEl.textContent = [given, middle, surname].filter(Boolean).join(' ');
-        addressEl.textContent = address;
-        birthdayEl.textContent = birthday;
-        sexEl.textContent = sex;
-        umpireClassEl.textContent = uclass;
-        statusEl.textContent = status;
-        photoEl.src = photo || 'images/id_placeholder.png';
-
-        idCard.style.display = 'block';
-      } catch (err) {
-        console.error('Fetch error:', err);
-        alert('Error fetching data for this QR. Please try again.');
-      }
     }
   </script>
 </body>
