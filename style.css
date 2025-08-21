@@ -32,3 +32,31 @@ header h1{
   :root{--card-width:320px}
   .id-name{left:130px; font-size:16px}
 }
+/* ID Card Container */
+#id-card {
+  width: var(--card-width); /* keeps the card width consistent */
+  border: 2px solid #333;
+  border-radius: 10px;
+  background: white;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  text-align: left; /* flush left all text inside */
+  display: inline-block;
+}
+
+/* ID Photo inside the card */
+#id-photo {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  margin-bottom: 15px;
+  border: 2px solid #000;
+  border-radius: 5px;
+}
+
+/* Info text fields */
+.info {
+  font-size: 18px;
+  margin: 4px 0; /* consistent spacing */
+  color: #111;
+}
