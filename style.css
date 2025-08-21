@@ -44,19 +44,3 @@ header h1{
   display: inline-block;
 }
 
-/* ID Photo inside the card */
-#id-photo {
-  width: 180px;
-  height: 180px;
-  object-fit: cover;
-  margin-bottom: 15px;
-  border: 2px solid #000;
-  border-radius: 5px;
-}
-
-/* Info text fields */
-.info {
-  font-size: 18px;
-  margin: 4px 0; /* consistent spacing */
-  color: #111;
-}
