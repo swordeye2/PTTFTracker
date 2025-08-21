@@ -23,12 +23,15 @@
       max-width: 380px;
       width: 100%;
     }
-    #preview {
+    #preview, #standbyImage {
       width: 100%;
       height: 250px;
-      background: #000;
       border-radius: 8px;
       object-fit: cover;
+    }
+    #preview {
+      display: none; /* hidden until scan starts */
+      background: #000;
     }
     .id-card {
       margin-top: 20px;
@@ -54,6 +57,11 @@
 
   <div class="container">
     <h2>PTTF Umpire Tracker</h2>
+
+    <!-- Standby image until scanning -->
+    <img id="standbyImage" src="images/id_placeholder.jpg" alt="Standby">
+
+    <!-- Video scanner (hidden until active) -->
     <video id="preview" autoplay playsinline></video>
 
     <div class="id-card" id="idCard">
@@ -74,6 +82,7 @@
   <script src="https://cdn.jsdelivr.net/npm/instascan@1.0.0/instascan.min.js"></script>
   <script>
     const videoElement = document.getElementById('preview');
+    const standbyImage = document.getElementById('standbyImage');
     const idCard = document.getElementById('idCard');
     const idImage = document.getElementById('idImage');
     const nameField = document.getElementById('name');
@@ -98,17 +107,15 @@
           console.log('Fetched data:', umpireData);
 
           if (umpireData && umpireData["Given Name"]) {
-            // Full name = Given + Middle + Surname
             nameField.textContent = `${umpireData["Given Name"]} ${umpireData["Middle Name"]} ${umpireData["Surname"]}`;
             
-            idNumberField.textContent = content; // QR code value
+            idNumberField.textContent = content;
             addressField.textContent = umpireData["Address"];
             birthdayField.textContent = umpireData["Birthday"];
             sexField.textContent = umpireData["Sex"];
             umpireClassField.textContent = umpireData["UmpireClass"];
             statusField.textContent = umpireData["Status"];
 
-            // Photo URL from sheet
             if (umpireData["PhotoURL"]) {
               idImage.src = umpireData["PhotoURL"];
             } else {
@@ -131,7 +138,10 @@
     Instascan.Camera.getCameras()
       .then(cameras => {
         if (cameras.length > 0) {
-          scanner.start(cameras[0]); // start first camera
+          // Hide standby image, show video when ready
+          standbyImage.style.display = 'none';
+          videoElement.style.display = 'block';
+          scanner.start(cameras[0]);
         } else {
           alert('No cameras found.');
         }
