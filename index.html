@@ -3,160 +3,130 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PTTF Umpire Verifier</title>
+  <title>QR Code Umpire Tracker</title>
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
+      background: url('images/background.png') center/cover no-repeat fixed;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      background: url('images/background.png') center/cover no-repeat fixed;
+      justify-content: flex-start;
       min-height: 100vh;
-      margin: 0;
+      padding: 20px;
     }
-
     #reader {
-      width: 400px;
-      height: 400px;
-      margin-bottom: 20px;
-      border: 2px solid #444;
-      border-radius: 10px;
-      background: #fff;
+      width: 500px;
+      height: 500px;
+      margin: 20px auto;
+      border: 3px solid #333;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    #id_card {
+      margin-top: 20px;
+      width: 500px;
+      height: 300px;
+      border: 2px solid #333;
+      border-radius: 15px;
+      overflow: hidden;
+      background: white;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-
-    #id-card {
-      width: 450px;
-      border: 2px solid #333;
-      border-radius: 10px;
-      background: white;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      text-align: center;
+    #id_card img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
     }
-
-    #id-photo {
-      width: 180px;
-      height: 180px;
-      object-fit: cover;
-      margin-bottom: 15px;
-      border: 2px solid #000;
-      border-radius: 5px;
-    }
-
-    .info {
-      font-size: 18px;
-      margin: 5px 0;
-    }
-
-    #start-scan {
+    button {
+      margin-top: 10px;
       padding: 10px 20px;
       font-size: 16px;
-      background: #0066cc;
-      color: white;
+      border-radius: 10px;
       border: none;
-      border-radius: 5px;
+      background: #007bff;
+      color: white;
       cursor: pointer;
-      margin-bottom: 15px;
     }
-
-    #start-scan:hover {
-      background: #004999;
+    button:hover {
+      background: #0056b3;
     }
   </style>
 </head>
 <body>
-  <h2>PTTF Umpire Verifier</h2>
 
-  <button id="start-scan">Start QR Scan</button>
-
-  <div id="reader">
-    <img id="id-placeholder" src="images/id_placeholder.png" alt="Waiting for scan..." style="width:100%; height:100%; object-fit:contain;">
+  <h1>QR Code Umpire Tracker</h1>
+  <div id="reader"></div>
+  <button onclick="startScanner()">Start Scan</button>
+  
+  <div id="id_card">
+    <img id="standbyImage" src="images/id_placeholder.png" alt="ID Placeholder">
   </div>
 
-  <div id="id-card">
-    <img id="id-photo" src="images/1placeholder.png" alt="ID Photo">
-    <div class="info" id="surname">Surname: -</div>
-    <div class="info" id="givenName">Given Name: -</div>
-    <div class="info" id="middleName">Middle Name: -</div>
-    <div class="info" id="address">Address: -</div>
-    <div class="info" id="birthday">Birthday: -</div>
-    <div class="info" id="sex">Sex: -</div>
-    <div class="info" id="umpireClass">Umpire Class: -</div>
-    <div class="info" id="status">Status: -</div>
-  </div>
-
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <script>
     let html5QrCode;
-    let scanning = false;
-
-    document.getElementById("start-scan").addEventListener("click", startScanner);
 
     function startScanner() {
-      if (scanning) return; // prevent multiple scans
-
-      html5QrCode = new Html5Qrcode("reader");
-
-      const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-        stopScanner();
-        fetchDetails(decodedText);
-      };
-
-      // Prefer back camera, fallback to any available
-      const config = { facingMode: "environment" };
-
-      html5QrCode.start(
-        config,
-        {
-          fps: 10,
-          qrbox: { width: 350, height: 350 }
-        },
-        qrCodeSuccessCallback
-      ).then(() => {
-        scanning = true;
-      }).catch(err => {
-        console.error("Camera start error:", err);
-        alert("Unable to access camera. Please check browser permissions.");
-      });
-    }
-
-    function stopScanner() {
       if (html5QrCode) {
         html5QrCode.stop().then(() => {
-          scanning = false;
-          document.getElementById("reader").innerHTML =
-            '<img id="id-placeholder" src="images/id_placeholder.png" alt="Waiting for scan..." style="width:100%; height:100%; object-fit:contain;">';
-        }).catch(err => console.error("Stop failed", err));
+          html5QrCode.clear();
+          runScanner();
+        });
+      } else {
+        runScanner();
       }
     }
 
-    function fetchDetails(accessCode) {
-      const apiUrl = "https://script.google.com/macros/s/AKfycbz-3ySdh3DBoe2St_NhNpCHlsREN36b5TAUMFiO8BqRQjrhePfWCXThEt4lDRHTLQrz/exec?code=" + encodeURIComponent(accessCode);
+    function runScanner() {
+      html5QrCode = new Html5Qrcode("reader");
+      const qrConfig = { fps: 10, qrbox: 300 };
+      
+      // Force back camera
+      Html5Qrcode.getCameras().then(cameras => {
+        if (cameras && cameras.length) {
+          let backCamera = cameras.find(cam => cam.label.toLowerCase().includes("back")) || cameras[0];
+          html5QrCode.start(
+            backCamera.id,
+            qrConfig,
+            qrCodeMessage => {
+              fetchData(qrCodeMessage);
+              html5QrCode.stop();
+            },
+            errorMessage => {}
+          );
+        }
+      });
+    }
 
-      fetch(apiUrl)
-        .then(response => response.json())
+    function fetchData(code) {
+      fetch(`https://script.google.com/macros/s/AKfycbz-3ySdh3DBoe2St_NhNpCHlsREN36b5TAUMFiO8BqRQjrhePfWCXThEt4lDRHTLQrz/exec?code=${code}`)
+        .then(res => res.json())
         .then(data => {
           if (data && data.Surname) {
-            document.getElementById("surname").textContent = "Surname: " + data.Surname;
-            document.getElementById("givenName").textContent = "Given Name: " + data["Given Name"];
-            document.getElementById("middleName").textContent = "Middle Name: " + data["Middle Name"];
-            document.getElementById("address").textContent = "Address: " + data.Address;
-            document.getElementById("birthday").textContent = "Birthday: " + data.Birthday;
-            document.getElementById("sex").textContent = "Sex: " + data.Sex;
-            document.getElementById("umpireClass").textContent = "Umpire Class: " + data.UmpireClass;
-            document.getElementById("status").textContent = "Status: " + data.Status;
-            document.getElementById("id-photo").src = data.Photo || "placeholder.png";
+            document.getElementById("id_card").innerHTML = `
+              <div style="padding: 10px; text-align: left; font-size: 16px;">
+                <p><strong>Surname:</strong> ${data["Surname"]}</p>
+                <p><strong>Given Name:</strong> ${data["Given Name"]}</p>
+                <p><strong>Middle Name:</strong> ${data["Middle Name"]}</p>
+                <p><strong>Address:</strong> ${data["Address"]}</p>
+                <p><strong>Birthday:</strong> ${data["Birthday"]}</p>
+                <p><strong>Sex:</strong> ${data["Sex"]}</p>
+                <p><strong>Umpire Class:</strong> ${data["UmpireClass"]}</p>
+                <p><strong>Status:</strong> ${data["Status"]}</p>
+                ${data["Photo"] ? `<img src="${data["Photo"]}" style="max-width:150px; margin-top:10px;">` : ""}
+              </div>
+            `;
           } else {
-            alert("No record found for this code.");
+            document.getElementById("id_card").innerHTML = "<p>No record found</p>";
           }
         })
         .catch(err => {
-          console.error("Fetch error:", err);
-          alert("Failed to fetch details.");
+          console.error(err);
+          document.getElementById("id_card").innerHTML = "<p>Error fetching data</p>";
         });
     }
   </script>
